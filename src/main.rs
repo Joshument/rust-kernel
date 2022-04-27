@@ -2,17 +2,18 @@
 #![no_main]
 
 #![feature(custom_test_frameworks)]
-#![test_runner(crate::test_runner)]
+#![test_runner(tests::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
 use core::panic::PanicInfo;
-use core::fmt::Write;
-
 mod vga_buffer;
+mod tests;
+mod qemu;
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
     println!("Hello World!");
+    println!("{} {} {} {}", "woo", 7 * 3, 5 / 3, core::f32::consts::PI);
 
     #[cfg(test)]
     test_main();
@@ -26,18 +27,3 @@ fn panic(info: &PanicInfo) -> ! {
     loop {}
 }
 
-#[cfg(test)]
-fn test_runner(tests: &[&dyn Fn()]) {
-    println!("Running {} tests", tests.len());
-
-    for test in tests {
-        test();
-    }
-}
-
-#[test_case]
-pub fn trivial_assertion() {
-    print!("trivial assertion... ");
-    assert_eq!(1, 1);
-    println!("OK!");
-}

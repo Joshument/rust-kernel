@@ -1,0 +1,1 @@
+/home/josh/Documents/VsCode/Rust/rust-kernel/target/x86_64-rustos/debug/rust-kernel: /home/josh/Documents/VsCode/Rust/rust-kernel/src/main.rs /home/josh/Documents/VsCode/Rust/rust-kernel/src/qemu.rs /home/josh/Documents/VsCode/Rust/rust-kernel/src/tests.rs /home/josh/Documents/VsCode/Rust/rust-kernel/src/vga_buffer.rs
