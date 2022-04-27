@@ -1,1 +1,0 @@
-/home/josh/Documents/VsCode/Rust/rust-kernel/target/x86_64-rustos/debug/librust_kernel.rlib: /home/josh/Documents/VsCode/Rust/rust-kernel/src/lib.rs /home/josh/Documents/VsCode/Rust/rust-kernel/src/tests.rs /home/josh/Documents/VsCode/Rust/rust-kernel/src/vga_buffer.rs
