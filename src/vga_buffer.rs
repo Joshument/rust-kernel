@@ -151,3 +151,25 @@ impl Writer {
         }
     }
 }
+
+#[test_case]
+pub fn test_println_simple() {
+    crate::println!("test_println_simple output");
+}
+
+#[test_case]
+pub fn test_println_many() {
+    for _ in 0..200 {
+        crate::println!("test_println_many output");
+    }
+}
+
+#[test_case]
+pub fn test_println_output() {
+    let s = "Some string";
+    crate::println!("{}", s);
+    for (i, c) in s.chars().enumerate() {
+        let screen_char = WRITER.lock().buffer.chars[BUFFER_HEIGHT - 2][i].read();
+        assert_eq!(char::from(screen_char.ascii_character), c);
+    }
+}
