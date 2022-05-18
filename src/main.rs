@@ -3,6 +3,7 @@
 #![no_std]
 #![no_main]
 #![feature(custom_test_frameworks)]
+#![feature(abi_x86_interrupt)]
 #![test_runner(rust_kernel::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
@@ -11,11 +12,14 @@ use rust_kernel::println;
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
-    println!("Hello World{}", "!");
-    println!("The awesome! {} {} {} {}", stringify!(shdausidh), core::f32::consts::PI, 4.0 / 3.0, 0b0111);
+    println!("Hello World{} {:?}", "!", [[1, 1, 1], [1, 1, 1], [1, 1, 1]]);
+    
+    rust_kernel::init();
 
     #[cfg(test)]
     test_main();
+
+    println!("It did not crash!");
 
     loop {}
 }
