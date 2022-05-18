@@ -25,7 +25,14 @@ macro_rules! println {
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments) {
     use core::fmt::Write;
-    WRITER.lock().write_fmt(args).unwrap();
+    use x86_64::instructions::interrupts;
+
+    interrupts::without_interrupts(|| {
+        WRITER
+            .lock()
+            .write_fmt(args)
+            .expect("Failed to write to VGA buffer!");
+    });
 }
 
 // Color codes for VGA buffer
@@ -97,6 +104,7 @@ impl fmt::Write for Writer {
 impl Writer {
     pub fn write_byte(&mut self, byte: u8) {
         match byte {
+            0x0008 => self.backspace(),
             b'\n' => self.new_line(),
             byte => {
                 if self.column_position >= BUFFER_WIDTH {
@@ -121,7 +129,7 @@ impl Writer {
         for byte in s.bytes() {
             match byte {
                 // printable ASCII byte or newline
-                0x20..=0x7e | b'\n' => self.write_byte(byte),
+                0x20..=0x7e | b'\n' | 0x0008 => self.write_byte(byte),
                 // not part of printable ASCII range
                 _ => self.write_byte(0xfe),
             }
@@ -138,6 +146,35 @@ impl Writer {
         }
         self.clear_row(BUFFER_HEIGHT - 1);
         self.column_position = 0;
+    }
+
+    fn del_line(&mut self) {
+        self.clear_row(BUFFER_HEIGHT - 1);
+
+        for row in (0..BUFFER_HEIGHT - 1).rev() {
+            for col in 0..BUFFER_WIDTH {
+                let character = self.buffer.chars[row][col].read();
+                self.buffer.chars[row + 1][col].write(character);
+            }
+        }
+
+        for col in 0..BUFFER_WIDTH {
+            let character = self.buffer.chars[BUFFER_HEIGHT - 1][col].read();
+
+            if character.ascii_character != b' ' {
+                self.column_position = col + 1;
+            }
+        }
+    }
+
+    fn backspace(&mut self) {
+        if self.column_position == 0 {
+            self.del_line();            
+        } else {
+            self.column_position -= 1;
+            self.write_byte(b' ');
+            self.column_position -= 1;
+        }
     }
 
     fn clear_row(&mut self, row: usize) {
@@ -166,10 +203,16 @@ pub fn test_println_many() {
 
 #[test_case]
 pub fn test_println_output() {
-    let s = "Some string";
-    crate::println!("{}", s);
-    for (i, c) in s.chars().enumerate() {
-        let screen_char = WRITER.lock().buffer.chars[BUFFER_HEIGHT - 2][i].read();
-        assert_eq!(char::from(screen_char.ascii_character), c);
-    }
+    use core::fmt::Write;
+    use x86_64::instructions::interrupts;
+
+    let s = "Some test string that fits on a single line";
+    interrupts::without_interrupts(|| {
+        let mut writer = WRITER.lock();
+        writeln!(writer, "\n{}", s).expect("writeln failed");
+        for (i, c) in s.chars().enumerate() {
+            let screen_char = writer.buffer.chars[BUFFER_HEIGHT - 2][i].read();
+            assert_eq!(char::from(screen_char.ascii_character), c);
+        }
+    });
 }

@@ -8,20 +8,21 @@
 #![reexport_test_harness_main = "test_main"]
 
 use core::panic::PanicInfo;
-use rust_kernel::println;
+use rust_kernel::{println, print, hlt_loop};
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
-    println!("Hello World{} {:?}", "!", [[1, 1, 1], [1, 1, 1], [1, 1, 1]]);
+    println!("Hello World!");
     
+    println!("Initializing...");
     rust_kernel::init();
 
     #[cfg(test)]
     test_main();
 
-    println!("It did not crash!");
+    println!("Finished startup!");
 
-    loop {}
+    hlt_loop();
 }
 
 /// This function is called on panic.
@@ -29,7 +30,7 @@ pub extern "C" fn _start() -> ! {
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     println!("{}", info);
-    loop {}
+    hlt_loop();
 }
 
 #[cfg(test)]
