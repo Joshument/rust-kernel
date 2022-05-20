@@ -8,7 +8,7 @@
 #![reexport_test_harness_main = "test_main"]
 
 use core::panic::PanicInfo;
-use rust_kernel::{println, print, hlt_loop};
+use rust_kernel::{println, hlt_loop};
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
@@ -16,6 +16,11 @@ pub extern "C" fn _start() -> ! {
     
     println!("Initializing...");
     rust_kernel::init();
+    
+    use x86_64::registers::control::Cr3;
+
+    let (level_4_page_table, _) = Cr3::read();
+    println!("Level 4 page table at: {:?}", level_4_page_table.start_address());
 
     #[cfg(test)]
     test_main();
